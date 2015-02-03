@@ -20,3 +20,25 @@ Move player0(AntiChess ob)
 	int k=rand()%ob.totalMoves;
  	return ob.validMoves[k];
 }
+
+int min(Antichess ob){
+
+}
+
+int max(Antichess ob){
+	
+}
+
+int heuristics(int player){
+	int i,j;
+	int count = 0;
+	
+	for (i=0;i<8;i++){
+		for (j=0;j<8;j++){
+			if (ob.board[i][j] == player)
+				count++;
+		}
+	}
+	
+	return count;
+}
