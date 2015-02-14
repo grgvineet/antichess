@@ -11,12 +11,12 @@
 	You can be any one of the players, Player1(White) or Player0(Black). You are advised to test your code for both.
 */
 
-
 #pragma once
 #include "AntiChess.h"
 
 Move player1(AntiChess ob)
 {
-    /*Your code here*/
- 	return ob.validMoves[0];
+    /*Sample code using random function*/
+	int k=rand()%ob.totalMoves;
+ 	return ob.validMoves[k];
 }
