@@ -10,7 +10,7 @@
 	It contains main function for running the cpp file.
 	You are requested not to change this file, because any of your change wont be incorporated in the actual competition.
 
-	NOTE: This file may not represent the exact main cpp file to be used in the competition. Certain features such as timer for each move have not been incorporated in this file. You are suggested to check regularly for any updates to the file.
+	NOTE: This file may not represent the exact main cpp file to be used in the competition. You are suggested to check regularly for any updates to the file.
 */
 
 
@@ -22,6 +22,11 @@ using namespace std;
 
 #define PLAYER0 Player0
 #define PLAYER1 Player1
+#define TIME_MAX 5000
+
+int flagp1;
+int flagp0;
+Move mo;
 
 bool equateMove(Move a,Move b)
 {
@@ -30,10 +35,27 @@ bool equateMove(Move a,Move b)
 	return false;
 }
 
+void player1_wrapper(void *_arg){
+    AntiChess *args=(AntiChess*)_arg;
+    AntiChess temp=*args;
+    flagp1=0;
+    mo=player1(temp);
+    flagp1=1;
+}
+
+void player0_wrapper(void *_arg){
+    AntiChess *args=(AntiChess*)_arg;
+    AntiChess temp=*args;
+    flagp0=0;
+    mo=player0(temp);
+    flagp0=1;
+}
+
 //Main Function
 int main(){
-	AntiChess actualGame;
-	Move mo;
+	AntiChess actualGame,temp,*arg;
+	//Move mo;
+	HANDLE hThread;
 	actualGame.print();
 
 	while(1)
@@ -50,8 +72,16 @@ int main(){
 			break;
 		}
 		//cout<<"\n TOTAL MOVES : "<<actualGame.totalMoves<<"\nENPASSENT INDEX : "<<actualGame.enpassantIndex<<endl;
-        AntiChess temp=actualGame;
-		mo=player1(temp);
+        temp=actualGame;
+        arg=&temp;
+        flagp1=0;
+        (hThread = (HANDLE)_beginthread(player1_wrapper,0,(void*)arg)); // Call user function.
+		Sleep(TIME_MAX + 5);
+		if(flagp1==0){
+            cout<<"\n>>Player 1 exceeded time limit. Player 0 wins!";
+            break;
+		}
+		//mo=player1(temp);
 		cout<<"\nTotalMoves="<<actualGame.totalMoves;
 		mo.print();
 		int fmove=0;
@@ -70,6 +100,7 @@ int main(){
             }
             actualGame.board[mo.yFinal][mo.xFinal]=actualGame.board[mo.yInit][mo.xInit];
             actualGame.board[mo.yInit][mo.xInit]='-';
+
             cout<<"\nPIECE : "<<actualGame.board[mo.yFinal][mo.xFinal]<<endl;
             if(actualGame.board[mo.yFinal][mo.xFinal]=='p' || actualGame.board[mo.yFinal][mo.xFinal]=='P'){
                     actualGame.captureOrPawnMove=0;
@@ -82,8 +113,8 @@ int main(){
                     cout<<"\n  >>Game Drawn!!";
                     break;
             }
-            cout<<"Press Enter to continue.";
-            cin.get();
+            //cout<<"Press Enter to continue.";
+            //cin.get();
 		}
 		else{
             cout<<"Invalid Move by Player 1! Player 0 wins!";
@@ -100,9 +131,16 @@ int main(){
 			cout<<"\n  >>Player 0 won the game!!";
 			break;
 		}
-	//	cout<<"\n TOTAL MOVES : "<<actualGame.totalMoves<<"\nENPASSENT INDEX : "<<actualGame.enpassantIndex<<endl;
 
 	    temp=actualGame;
+	    arg=&temp;
+        flagp0=0;
+        (hThread = (HANDLE)_beginthread(player0_wrapper,0,(void*)arg)); // Call user function.
+		Sleep(TIME_MAX + 5);
+		if(flagp0==0){
+            cout<<"\n>>Player 0 exceeded time limit. Player 1 wins!";
+            break;
+		}
 		mo=player0(temp);
 		cout<<"\nTotalMoves="<<actualGame.totalMoves;
 		mo.print();
@@ -135,8 +173,8 @@ int main(){
                     cout<<"\n  >>Game Drawn!!";
                     break;
             }
-            cout<<"Press Enter to continue.";
-            cin.get();
+            //cout<<"Press Enter to continue.";
+            //cin.get();
 		}
 		else{
             cout<<"Invalid Move by Player 0! Player 1 wins!";
@@ -455,12 +493,11 @@ void AntiChess::updateMovesBishop(){
 							int iy=i;
 							int jx=j;
 
-							while(inRange(iy+incy,jx+incx) && (board[iy+incy][jx+incx]=='-' || !isMyPiece(board[iy+incy][jx+incx])))
+							while(inRange(iy+incy,jx+incx) && (board[iy+incy][jx+incx]=='-'))
 							{
 							    updateMovesArray(j, i, jx + incx, iy + incy);
 								iy=iy+incy;
 								jx=jx+incx;
-
 							}
 
 							if(inRange(iy+incy,jx+incx) && !isMyPiece(board[iy+incy][jx+incx]))
